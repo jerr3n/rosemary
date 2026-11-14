@@ -1,4 +1,4 @@
-use alloc::string::{String, ToString};
+use alloc::string::String;
 use alloc::vec::Vec;
 
 use crate::error::Result;
@@ -86,7 +86,7 @@ impl FsDylibSource {
 
     /// Also look for a dependency's basename in `dir`.
     pub fn search_path(&mut self, dir: &str) -> &mut Self {
-        self.extra_search_paths.push(dir.to_string());
+        self.extra_search_paths.push(String::from(dir));
         self
     }
 }
@@ -289,6 +289,7 @@ impl SymbolProvider for Namespace {
 mod tests {
     use super::*;
     use crate::exports::{Export, ExportKind};
+    use alloc::string::ToString;
     use alloc::vec;
 
     fn direct(name: &str, addr: Word) -> Export {
