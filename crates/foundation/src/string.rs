@@ -734,7 +734,7 @@ unsafe extern "C" fn data_using_encoding_lossy(
     receiver: Id,
     sel: Sel,
     ns: usize,
-    _lossy: bool,
+    _lossy: u8,
 ) -> Id {
     unsafe { data_using_encoding(receiver, sel, ns) }
 }

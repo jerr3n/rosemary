@@ -1120,11 +1120,11 @@ pub unsafe extern "C" fn protocol_addMethodDescription(
     proto: *const c_void,
     name: Sel,
     types: *const c_char,
-    is_required: bool,
-    is_instance: bool,
+    is_required: u8,
+    is_instance: u8,
 ) {
     if let (Some(proto), Some(types)) = (unsafe { protocol(proto) }, unsafe { cstr(types) }) {
-        proto.add_method(name, types, is_required, is_instance);
+        proto.add_method(name, types, is_required != 0, is_instance != 0);
     }
 }
 
@@ -1132,27 +1132,27 @@ pub unsafe extern "C" fn protocol_addMethodDescription(
 pub unsafe extern "C" fn protocol_getMethodDescription(
     proto: *const c_void,
     name: Sel,
-    is_required: bool,
-    is_instance: bool,
+    is_required: u8,
+    is_instance: u8,
 ) -> Description {
     unsafe { protocol(proto) }.map_or(
         Description {
             sel: std::ptr::null(),
             types: std::ptr::null(),
         },
-        |p| p.method(name, is_required, is_instance),
+        |p| p.method(name, is_required != 0, is_instance != 0),
     )
 }
 
 /// The protocol's own methods in one group, ending in a zeroed entry.
 pub unsafe extern "C" fn protocol_copyMethodDescriptionList(
     proto: *const c_void,
-    is_required: bool,
-    is_instance: bool,
+    is_required: u8,
+    is_instance: u8,
     out_count: *mut u32,
 ) -> *mut Description {
     let mut values = unsafe { protocol(proto) }
-        .map(|p| p.methods(is_required, is_instance))
+        .map(|p| p.methods(is_required != 0, is_instance != 0))
         .unwrap_or_default();
     let count = values.len() as u32;
     if !values.is_empty() {
@@ -1212,32 +1212,32 @@ pub unsafe extern "C" fn protocol_addProperty(
     name: *const c_char,
     attributes: *const PropertyAttribute,
     count: u32,
-    is_required: bool,
-    is_instance: bool,
+    is_required: u8,
+    is_instance: u8,
 ) {
     let (Some(proto), Some(name)) = (unsafe { protocol(proto) }, unsafe { cstr(name) }) else {
         return;
     };
     // SAFETY: `attributes` is null or `count` entries long.
     let attributes = unsafe { attribute_string(attributes, count) };
-    proto.add_property(name, &attributes, is_required, is_instance);
+    proto.add_property(name, &attributes, is_required != 0, is_instance != 0);
 }
 
 /// Only a required property is ever found, because only those are kept.
 pub unsafe extern "C" fn protocol_getProperty(
     proto: *const c_void,
     name: *const c_char,
-    is_required: bool,
-    is_instance: bool,
+    is_required: u8,
+    is_instance: u8,
 ) -> *const c_void {
     let (Some(proto), Some(name)) = (unsafe { protocol(proto) }, unsafe { cstr(name) }) else {
         return std::ptr::null();
     };
-    if !is_required {
+    if is_required == 0 {
         return std::ptr::null();
     }
     proto
-        .property(name, is_instance)
+        .property(name, is_instance != 0)
         .map_or(std::ptr::null(), |p| p as *const _ as *const c_void)
 }
 
@@ -1759,6 +1759,8 @@ mod introspection {
 
     #[test]
     fn protocol_properties_and_conformance() {
+        const YES: u8 = 1;
+        const NO: u8 = 0;
         let base = crate::protocol::allocate(c"RosemaryBaseProtocol").unwrap();
         let attributes = [PropertyAttribute {
             name: c"T".as_ptr(),
@@ -1771,17 +1773,10 @@ mod introspection {
                 c"title".as_ptr(),
                 attributes.as_ptr(),
                 1,
-                true,
-                true,
+                YES,
+                YES,
             );
-            protocol_addProperty(
-                base_ptr,
-                c"hint".as_ptr(),
-                attributes.as_ptr(),
-                1,
-                false,
-                true,
-            );
+            protocol_addProperty(base_ptr, c"hint".as_ptr(), attributes.as_ptr(), 1, NO, YES);
         }
         crate::protocol::register(base);
         let derived = crate::protocol::allocate(c"RosemaryDerivedProtocol").unwrap();
@@ -1790,9 +1785,9 @@ mod introspection {
         let derived_ptr = derived as *const Protocol as *const c_void;
         let mut count = 0;
         unsafe {
-            let title = protocol_getProperty(derived_ptr, c"title".as_ptr(), true, true);
+            let title = protocol_getProperty(derived_ptr, c"title".as_ptr(), YES, YES);
             assert_eq!(CStr::from_ptr(property_getAttributes(title)), c"T@");
-            assert!(protocol_getProperty(base_ptr, c"hint".as_ptr(), false, true).is_null());
+            assert!(protocol_getProperty(base_ptr, c"hint".as_ptr(), NO, YES).is_null());
             assert_eq!(
                 take(protocol_copyPropertyList(base_ptr, &mut count), count).len(),
                 1

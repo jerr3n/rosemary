@@ -48,9 +48,9 @@ pub(super) unsafe extern "C" fn retained_references(receiver: Id, _sel: Sel) -> 
     unsafe { object::body::<CommandBufferDescriptor>(receiver) }.retained_references
 }
 
-pub(super) unsafe extern "C" fn set_retained_references(receiver: Id, _sel: Sel, value: bool) {
+pub(super) unsafe extern "C" fn set_retained_references(receiver: Id, _sel: Sel, value: u8) {
     // SAFETY: as above.
-    unsafe { object::body::<CommandBufferDescriptor>(receiver) }.retained_references = value;
+    unsafe { object::body::<CommandBufferDescriptor>(receiver) }.retained_references = value != 0;
 }
 
 pub(super) unsafe extern "C" fn error_options(receiver: Id, _sel: Sel) -> u64 {

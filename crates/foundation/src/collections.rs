@@ -2021,11 +2021,11 @@ unsafe extern "C" fn data_init_no_copy_free(
     _sel: Sel,
     bytes: *mut u8,
     length: usize,
-    free: bool,
+    free: u8,
 ) -> Id {
     // SAFETY: the caller says `bytes` covers `length` bytes.
     let copy = unsafe { raw(bytes, length) }.to_vec();
-    if free && !bytes.is_null() {
+    if free != 0 && !bytes.is_null() {
         // SAFETY: a `malloc` block the caller gave away.
         unsafe { darwin::heap::free(bytes.cast()) };
     }
@@ -2039,7 +2039,7 @@ unsafe extern "C" fn data_init_no_copy(
     length: usize,
 ) -> Id {
     // SAFETY: forwarded; `-initWithBytesNoCopy:length:` frees when done.
-    unsafe { data_init_no_copy_free(receiver, sel, bytes, length, true) }
+    unsafe { data_init_no_copy_free(receiver, sel, bytes, length, u8::from(true)) }
 }
 
 unsafe extern "C" fn data_init_with_contents_of_file(receiver: Id, sel: Sel, path: Id) -> Id {
@@ -2498,9 +2498,9 @@ unsafe extern "C" fn number_with_double(_class: Id, _sel: Sel, value: f64) -> Id
 /// `+numberWithBool:` is `kCFBooleanTrue` or `kCFBooleanFalse` itself, as
 /// Apple's is: a guest compares the answer against `@YES` by identity, and
 /// `CFGetTypeID` of it is the boolean type.
-unsafe extern "C" fn number_with_bool(_class: Id, _sel: Sel, value: bool) -> Id {
+unsafe extern "C" fn number_with_bool(_class: Id, _sel: Sel, value: u8) -> Id {
     // Not autoreleased: the two objects live for the process.
-    collections::boolean(value) as Id
+    collections::boolean(value != 0) as Id
 }
 
 /// The `-initWith...:` forms of the constructors above. A number is a
@@ -2520,7 +2520,7 @@ number_init! {
     number_init_int => number_with_int: i32,
     number_init_integer => number_with_integer: i64,
     number_init_double => number_with_double: f64,
-    number_init_bool => number_with_bool: bool,
+    number_init_bool => number_with_bool: u8,
     number_init_unsigned_long => number_with_unsigned_long: u64,
     number_init_unsigned_int => number_with_unsigned_int: u32,
     number_init_short => number_with_short: i16,

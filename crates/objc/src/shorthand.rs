@@ -127,7 +127,7 @@ pub unsafe extern "C" fn objc_getProperty(
     receiver: Id,
     _sel: Sel,
     offset: isize,
-    _atomic: bool,
+    _atomic: u8,
 ) -> Id {
     if receiver.is_null() {
         return std::ptr::null_mut();
@@ -143,7 +143,7 @@ pub unsafe extern "C" fn objc_setProperty(
     _sel: Sel,
     offset: isize,
     value: Id,
-    _atomic: bool,
+    _atomic: u8,
     _copy: i8,
 ) {
     // SAFETY: as `objc_getProperty`.
@@ -195,8 +195,8 @@ pub unsafe extern "C" fn objc_copyStruct(
     dest: *mut c_void,
     src: *const c_void,
     size: isize,
-    _atomic: bool,
-    _has_strong: bool,
+    _atomic: u8,
+    _has_strong: u8,
 ) {
     if size <= 0 {
         return;
