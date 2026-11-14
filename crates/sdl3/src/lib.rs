@@ -1246,8 +1246,8 @@ pub mod clipboard {
 }
 
 /// The desktop's file chooser (`SDL_ShowOpenFileDialog` and friends), which
-/// answers asynchronously: [`show`] returns at once and the [`Answer`] fills
-/// in when SDL calls back, possibly on another thread.
+/// answers asynchronously: [`dialog::show`] returns at once and the
+/// [`dialog::Answer`] fills in when SDL calls back, possibly on another thread.
 pub mod dialog {
     use super::*;
     use std::sync::{Arc, Mutex};

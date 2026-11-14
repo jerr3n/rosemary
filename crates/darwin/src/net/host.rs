@@ -110,7 +110,7 @@ mod link {
     ///
     /// # Safety
     ///
-    /// `addr` is a live link `struct sockaddr`, as [`is_link`] reports.
+    /// `addr` is a live link `struct sockaddr`, as [`super::is_link`] reports.
     pub unsafe fn link_from_host(addr: *const libc::sockaddr) -> Link {
         // SAFETY: AF_PACKET addresses have `sockaddr_ll` layout.
         let packet = unsafe { &*addr.cast::<libc::sockaddr_ll>() };
@@ -153,7 +153,7 @@ mod link {
     ///
     /// # Safety
     ///
-    /// `addr` is a live link `struct sockaddr`, as [`is_link`] reports.
+    /// `addr` is a live link `struct sockaddr`, as [`super::is_link`] reports.
     pub unsafe fn link_from_host(addr: *const libc::sockaddr) -> Link {
         // SAFETY: AF_LINK addresses have `sockaddr_dl` layout.
         let dl = unsafe { &*addr.cast::<libc::sockaddr_dl>() };

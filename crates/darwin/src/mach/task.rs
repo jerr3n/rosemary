@@ -29,7 +29,7 @@ pub extern "C" fn mach_host_self() -> Name {
 ///
 /// One name per thread, as on a real system, and like a real one each call
 /// adds a user reference the caller is expected to deallocate. The name is a
-/// [`Right::Thread`], so `thread_info` on it answers about this thread.
+/// [`space::Right::Thread`], so `thread_info` on it answers about this thread.
 pub extern "C" fn mach_thread_self() -> Name {
     let pid = crate::process::host_self();
     let tid = crate::process::thread_id();

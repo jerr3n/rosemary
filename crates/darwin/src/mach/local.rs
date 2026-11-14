@@ -124,7 +124,7 @@ pub unsafe fn write(address: u64, data: &[u8]) -> Result<(), i32> {
 ///
 /// # Safety
 ///
-/// As [`write`].
+/// As [`write()`].
 pub unsafe fn copy(source: u64, size: u64, dest: u64) -> i32 {
     if size == 0 {
         return KERN_SUCCESS;

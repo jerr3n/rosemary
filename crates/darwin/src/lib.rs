@@ -136,7 +136,7 @@ pub mod xlocale;
 
 /// The environment a guest's `main` receives as `envp`, as `NAME=VALUE`.
 ///
-/// Builtin libc uses [`env`]'s block, which is the guest's own. Native libc
+/// Builtin libc uses [`mod@env`]'s block, which is the guest's own. Native libc
 /// shares this process's environment.
 pub fn guest_environment() -> Vec<CString> {
     if libc_backend::using_builtin() {

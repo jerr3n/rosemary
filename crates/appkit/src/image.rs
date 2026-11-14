@@ -292,7 +292,7 @@ fn is_image(object: Id) -> bool {
 }
 
 /// The size an image reports, in points, which a caller relating it to the
-/// pixels [`bitmap`] hands back needs: a 2x representation makes the two
+/// pixels [`bitmap()`] hands back needs: a 2x representation makes the two
 /// differ, and a cursor's point is in points.
 pub fn declared_size(object: Id) -> NSSize {
     match is_image(object) {
