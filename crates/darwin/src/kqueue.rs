@@ -2329,10 +2329,12 @@ mod tests {
         };
         assert_eq!(collect(queue, Some(&add)).0, 0, "nothing delivered yet");
         let host = crate::signal::signal_to_host(SIGWINCH).expect("a host signal");
+        // Raised rather than sent to the process: another thread could take a
+        // process-directed signal, after this one has already collected.
         // SAFETY: a signal this process takes by default as a no-op.
         unsafe {
-            libc::kill(libc::getpid(), host);
-            libc::kill(libc::getpid(), host);
+            libc::raise(host);
+            libc::raise(host);
         }
         let (n, event) = collect(queue, None);
         assert_eq!(n, 1);
@@ -2361,15 +2363,15 @@ mod tests {
             ..Kevent::default()
         };
         assert_eq!(collect(queue, Some(&change)).0, 0);
-        // SAFETY: ignored, so this returns.
-        unsafe { libc::kill(libc::getpid(), host) };
+        // SAFETY: ignored, so this returns. Raised for the reason above.
+        unsafe { libc::raise(host) };
         let (n, event) = collect(queue, None);
         assert_eq!((n, event.data), (1, 1));
 
         change.flags = EV_DELETE;
         assert_eq!(collect(queue, Some(&change)).0, 0);
         // SAFETY: the disposition is SIG_IGN again, or this kills the test.
-        unsafe { libc::kill(libc::getpid(), host) };
+        unsafe { libc::raise(host) };
         assert_eq!(collect(queue, None).0, 0);
         // SAFETY: this test's own descriptor.
         unsafe { crate::net::descriptor::close(queue) };
