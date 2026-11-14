@@ -2085,7 +2085,7 @@ pub unsafe extern "C" fn CFDataCreateWithBytesNoCopy(
 ///
 /// The keyboard layout `TISGetInputSourceProperty` hands back is Apple's
 /// `CFData`, and the copy of it goes straight back into `UCKeyTranslate` - so
-/// the copy has to be Apple's too. See [`crate::foreign`].
+/// the copy has to be Apple's too. See `crate::foreign`, which only Darwin has.
 pub unsafe extern "C" fn CFDataCreateCopy(allocator: CFAllocatorRef, data: CFTypeRef) -> CFTypeRef {
     #[cfg(target_os = "macos")]
     // SAFETY: null or an object.
@@ -4202,7 +4202,10 @@ mod no_copy_tests {
             block
         };
         // A reused address was freed as some earlier block, not as this one.
-        FREED.lock().unwrap().retain(|&freed| freed != block as usize);
+        FREED
+            .lock()
+            .unwrap()
+            .retain(|&freed| freed != block as usize);
         block
     }
 

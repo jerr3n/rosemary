@@ -23,7 +23,7 @@ pub fn trace_code(value: u32) -> String {
     trace::code(value)
 }
 
-/// Say what one call did, under `ROSEMARY_TRACE_AUDIO`. For [`audiotoolbox`].
+/// Say what one call did, under `ROSEMARY_TRACE_AUDIO`. For `audiotoolbox`.
 pub fn trace(what: std::fmt::Arguments<'_>, status: i32) {
     trace::say(what, status);
 }

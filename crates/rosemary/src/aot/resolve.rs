@@ -1,8 +1,8 @@
 //! What a cached image's symbols and import decisions mean in this process.
 //!
 //! Symbols resolve through the same providers a live lift consults: the program's
-//! import sites as [`Program::lifter_config`] promotes them, this runtime's bridges,
-//! and the host's own libcalls. Nothing is matched by name alone.
+//! import sites as [`crate::program::Program::lifter_config`] promotes them, this
+//! runtime's bridges, and the host's own libcalls. Nothing is matched by name alone.
 
 use std::collections::HashMap;
 

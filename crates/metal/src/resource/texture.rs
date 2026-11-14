@@ -356,13 +356,13 @@ pub(super) unsafe extern "C" fn texture_2d_descriptor(
     pixel_format: u64,
     width: u64,
     height: u64,
-    mipmapped: bool,
+    mipmapped: u8,
 ) -> Id {
     autoreleased_descriptor(TextureDescriptor {
         pixel_format,
         width,
         height,
-        mipmap_level_count: if mipmapped {
+        mipmap_level_count: if mipmapped != 0 {
             full_chain(width, height)
         } else {
             1
@@ -377,14 +377,18 @@ pub(super) unsafe extern "C" fn texture_cube_descriptor(
     _sel: Sel,
     pixel_format: u64,
     size: u64,
-    mipmapped: bool,
+    mipmapped: u8,
 ) -> Id {
     autoreleased_descriptor(TextureDescriptor {
         texture_type: MTL_TEXTURE_TYPE_CUBE,
         pixel_format,
         width: size,
         height: size,
-        mipmap_level_count: if mipmapped { full_chain(size, size) } else { 1 },
+        mipmap_level_count: if mipmapped != 0 {
+            full_chain(size, size)
+        } else {
+            1
+        },
         ..TextureDescriptor::fresh()
     })
 }

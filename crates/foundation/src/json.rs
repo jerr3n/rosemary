@@ -733,9 +733,9 @@ mod tests {
             // SAFETY: `+numberWithBool:` is `id (Class, SEL, BOOL)` and
             // `-boolValue`/`-intValue` are `(id, SEL)` getters.
             unsafe {
-                let make: unsafe extern "C" fn(Id, Sel, bool) -> Id =
+                let make: unsafe extern "C" fn(Id, Sel, u8) -> Id =
                     std::mem::transmute(objc::msg::entry());
-                let object = make(number, objc::sel::get("numberWithBool:"), value);
+                let object = make(number, objc::sel::get("numberWithBool:"), u8::from(value));
                 assert_eq!(
                     object as CFTypeRef,
                     corefoundation::collections::boolean(value)
@@ -748,6 +748,25 @@ mod tests {
                 assert_eq!(get_int(object, objc::sel::get("intValue")), value as i32);
             }
         }
+    }
+
+    /// An x86-64 `BOOL` is a `signed char`, so `flags & mask` arrives as the
+    /// masked bit rather than as 1, and is `YES` all the same.
+    #[test]
+    fn number_with_bool_takes_any_nonzero_byte_as_yes() {
+        crate::bootstrap();
+        let number = objc::class::ptr(objc::class::lookup(c"NSNumber").expect("NSNumber")) as Id;
+        const MASKED_BIT: u8 = 1 << 4;
+        // SAFETY: `+numberWithBool:` is `id (Class, SEL, BOOL)`.
+        let object = unsafe {
+            let make: unsafe extern "C" fn(Id, Sel, u8) -> Id =
+                std::mem::transmute(objc::msg::entry());
+            make(number, objc::sel::get("numberWithBool:"), MASKED_BIT)
+        };
+        assert_eq!(
+            object as CFTypeRef,
+            corefoundation::collections::boolean(true)
+        );
     }
 
     /// An id past 2^53 is the case a JSON reader that keeps every number as a

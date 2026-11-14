@@ -207,7 +207,7 @@ pub struct ResourceBinding {
     pub count: u32,
     pub access: Access,
     /// For a texture, whether Vulkan carries it as a sampled image rather than
-    /// a storage image. See [`ir::TextureType::sampled_image`]; a buffer or a
+    /// a storage image. See [`crate::ir::TextureType::sampled_image`]; a buffer or a
     /// sampler leaves it false.
     pub sampled: bool,
     /// For a texture, whether it is a `texture_buffer`: a Vulkan texel

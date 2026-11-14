@@ -683,7 +683,7 @@ mod tests {
                         object,
                         crate::sel::get("value"),
                         4096,
-                        false,
+                        u8::from(false),
                     );
                 }
             }

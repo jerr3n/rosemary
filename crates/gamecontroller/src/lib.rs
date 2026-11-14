@@ -603,8 +603,8 @@ unsafe extern "C" fn should_monitor_background_events(_class: Id, _sel: Sel) -> 
     MONITOR_BACKGROUND_EVENTS.load(std::sync::atomic::Ordering::Relaxed)
 }
 
-unsafe extern "C" fn set_should_monitor_background_events(_class: Id, _sel: Sel, value: bool) {
-    MONITOR_BACKGROUND_EVENTS.store(value, std::sync::atomic::Ordering::Relaxed);
+unsafe extern "C" fn set_should_monitor_background_events(_class: Id, _sel: Sel, value: u8) {
+    MONITOR_BACKGROUND_EVENTS.store(value != 0, std::sync::atomic::Ordering::Relaxed);
 }
 
 unsafe extern "C" fn supported_localities(_receiver: Id, _sel: Sel) -> Id {

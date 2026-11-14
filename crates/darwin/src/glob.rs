@@ -417,12 +417,8 @@ fn matches(name: &[u8], pattern: &[Token]) -> bool {
                 true
             }
             Some(_) => false,
-            None => {
-                if n == name.len() {
-                    return true;
-                }
-                false
-            }
+            None if n == name.len() => return true,
+            None => false,
         };
         if advanced {
             continue;

@@ -181,7 +181,6 @@ dependencies = [
 name = "applicationservices"
 version = "0.5.0"
 dependencies = [
- "appkit",
  "exports",
 ]
 

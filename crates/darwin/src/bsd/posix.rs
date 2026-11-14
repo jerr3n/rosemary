@@ -1,7 +1,23 @@
 use std::ffi::{CStr, c_char, c_int, c_void};
 
-extern "C" fn abort_report_np(_: *const c_char) -> ! {
-    todo!()
+/// `void abort_report_np(const char *fmt, ...)`
+///
+/// FIXME (ACCURACY): Darwin keeps the message for the crash report and prints
+/// nothing. No crash report is written here, so it goes to the guest's `stderr`.
+///
+/// # Safety
+///
+/// `format` is null or a format the arguments match.
+unsafe extern "C" fn abort_report_np(format: *const c_char, args: ...) -> ! {
+    if !format.is_null() {
+        let fp = crate::stdio::stderr().cast::<crate::stdio::File>();
+        // SAFETY: the guest's `stderr`, and the caller's format and arguments.
+        unsafe {
+            crate::stdio::vfprintf(fp, format, args);
+            crate::stdio::fprintf(fp, c"\n".as_ptr());
+        }
+    }
+    std::process::abort()
 }
 
 unsafe extern "C" {
@@ -443,6 +459,30 @@ mod tests {
         assert_eq!(rc, 0);
         assert!(buf.0[..DARWIN].iter().any(|b| *b != 0xaa));
         assert!(buf.0[DARWIN..].iter().all(|b| *b == 0xaa));
+    }
+
+    /// The message is all a user learns about why the guest ended, so it has
+    /// to be out before the signal.
+    #[test]
+    fn abort_report_np_reports_its_message_and_aborts() {
+        use std::os::unix::process::ExitStatusExt;
+
+        const CHILD: &str = "ROSEMARY_ABORT_REPORT_TEST_CHILD";
+        if std::env::var_os(CHILD).is_some() {
+            // SAFETY: a literal format and the two arguments it names.
+            unsafe { abort_report_np(c"%s: code %d".as_ptr(), c"guest".as_ptr(), 7) }
+        }
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "bsd::posix::tests::abort_report_np_reports_its_message_and_aborts",
+            ])
+            .env(CHILD, "1")
+            .output()
+            .unwrap();
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(output.status.signal(), Some(libc::SIGABRT), "{stderr}");
+        assert!(stderr.contains("guest: code 7\n"), "{stderr}");
     }
 
     #[test]

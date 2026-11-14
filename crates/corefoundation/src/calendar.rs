@@ -8,7 +8,7 @@ const UNIX_TO_ABSOLUTE: i64 = 978_307_200;
 
 /// The identifiers `<CFLocale.h>` publishes, as the strings they are. Each
 /// constant *is* its own text, which is why the same list serves both as the
-/// published globals and as what [`create_with_identifier`] accepts.
+/// published globals and as what `CFCalendarCreateWithIdentifier` accepts.
 pub const IDENTIFIERS: &[(&str, &str)] = &[
     ("_kCFGregorianCalendar", "gregorian"),
     ("_kCFBuddhistCalendar", "buddhist"),
