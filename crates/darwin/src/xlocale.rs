@@ -1363,10 +1363,10 @@ mod tests {
     fn the_cached_table_answers_as_maskrune_does() {
         // SAFETY: the leaked object, live for the process.
         let locale = unsafe { &*(default_rune_locale() as usize as *const RuneLocale) };
-        for c in 0..CACHED_RUNES {
+        for (c, cached) in locale.runetype.iter().enumerate() {
             // SAFETY: touches no memory.
             let called = unsafe { maskrune(c as c_int, u32::MAX as u64) };
-            assert_eq!(locale.runetype[c], called as u32, "runetype[{c}]");
+            assert_eq!(*cached, called as u32, "runetype[{c}]");
         }
         assert_ne!(locale.runetype[' ' as usize] & ctype::SPACE, 0);
         assert_ne!(locale.runetype['\t' as usize] & ctype::SPACE, 0);

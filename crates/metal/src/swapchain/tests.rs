@@ -6493,11 +6493,11 @@ fn tiled_native_atomic_floor_without_escrow_is_terminal() {
     for layer in &mut state.scene_layers {
         layer.native_published_revision = None;
     }
-    for n in 0..19 {
+    for layer in &mut state.scene_layers[..19] {
         let replacement =
             BackingImageLease::create_for_window(gpu, window as usize, &desc).unwrap();
-        state.scene_layers[n].snapshot = replacement;
-        state.scene_layers[n].native_revision = Some(2);
+        layer.snapshot = replacement;
+        layer.native_revision = Some(2);
     }
     state.transaction_retiring_bytes = 19 * 16 * 1024 * 1024;
     let tiles = Arc::new(
@@ -10660,10 +10660,10 @@ fn atomic_scene_replacement_peak_reports_nonprogressing_physical_pressure() {
     // but the previous 28 old generations must remain pinned for rollback.
     // The 47 actual 16MiB leases occupy 752MiB before one more tile begins.
     state.transaction_pinned = old.clone();
-    for i in 0..19 {
+    for layer in &mut state.scene_layers[..19] {
         let fresh = BackingImageLease::create_for_window(gpu, window as usize, &desc).unwrap();
-        state.scene_layers[i].snapshot = fresh;
-        state.scene_layers[i].native_revision = Some(2);
+        layer.snapshot = fresh;
+        layer.native_revision = Some(2);
     }
     state.transaction_retiring_bytes = 19 * 16 * 1024 * 1024;
     let incoming = 4 * 16 * 1024 * 1024u64;
@@ -15297,17 +15297,10 @@ fn atomic_768mib_native_rollback_escrow_reclaims_real_gpu_images() {
     drop(blocker);
     restore_native_rollback(&mut state).expect("restore all old accepted generations");
     assert_eq!(state.scene_layers.len(), 28);
-    for index in 0..4 {
-        assert_eq!(state.scene_layers[index].native_revision, Some(1));
+    for layer in &state.scene_layers[..4] {
+        assert_eq!(layer.native_revision, Some(1));
         assert_eq!(
-            read_scene_pixel(
-                gpu,
-                state.scene_layers[index].snapshot.image.image,
-                2048,
-                2048,
-                16,
-                16
-            ),
+            read_scene_pixel(gpu, layer.snapshot.image.image, 2048, 2048, 16, 16),
             [0, 0, 255, 255]
         );
     }
